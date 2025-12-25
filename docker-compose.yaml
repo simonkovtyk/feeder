@@ -16,7 +16,7 @@ services:
       timeout: 10s
       retries: 5
   feeder-sys:
-    build: ./Dockerfile
+    build: .
     container_name: feeder-sys
     restart: unless-stopped
     volumes:
