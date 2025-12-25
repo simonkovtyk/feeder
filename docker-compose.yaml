@@ -1,0 +1,30 @@
+services:
+  feeder-postgre:
+    image: postgres:18.1-alpine
+    container_name: feeder-postgre
+    restart: unless-stopped
+    volumes:
+      - feeder:/var/postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      PGDATA: /var/postgres
+      POSTGRES_DB: feeder
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -d postgres" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+  feeder-sys:
+    build: ./Dockerfile
+    container_name: feeder-sys
+    restart: unless-stopped
+    volumes:
+      - ./data:/var/feeder:ro
+    depends_on:
+      feeder-postgre:
+        condition: service_healthy
+        restart: true
+
+volumes:
+  feeder:

@@ -1,0 +1,52 @@
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
+name: Build
+
+jobs:
+  release-please:
+    name: Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run release-please
+        id: release
+        uses: googleapis/release-please-action@v4
+        with:
+          skip-github-release: true
+          release-type: rust
+    
+      - name: Checkout
+        if: ${{ steps.release.outputs.release_created }}
+        uses: actions/checkout@v4
+
+      - name: Setup toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+
+      - name: Add targets
+        run: |
+          rustup target add linux-x86_64-unknown-linux-gnu
+          rustup target add aarch64-unknown-linux-gnu
+
+      - name: Build 
+        run: 
+
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        if: ${{ steps.release.outputs.release_created }}
+        with:
+          name: ${{ steps.release.outputs.version }}
+          tag_name: ${{ steps.release.outputs.version }}
+          body: ${{ steps.release.outputs.body }}
+          make_latest: true
+          preserve_order: true
+
